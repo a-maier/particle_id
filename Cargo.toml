@@ -5,7 +5,7 @@ authors = ["Andreas Maier <andreas.martin.maier@desy.de>"]
 version = "0.1.0"
 edition = "2021"
 license = "GPL-3.0-or-later"
-keywords = ["physics", "PDG", "Monte Carlo", "particle physics"]
+keywords = ["physics", "PDG"]
 categories = ["science"]
 repository = "https://github.com/a-maier/particle_id"
 
