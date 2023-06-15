@@ -9,6 +9,4 @@ keywords = ["physics", "PDG", "Monte Carlo", "particle physics"]
 categories = ["science"]
 repository = "https://github.com/a-maier/particle_id"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
