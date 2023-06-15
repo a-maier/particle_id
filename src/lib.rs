@@ -553,6 +553,14 @@ pub mod anti_gauge_and_higgs_bosons {
     pub const H_minus_minus: ParticleID = ParticleID(-38);
 }
 
+pub mod light_anti_baryons {
+    use super::{ParticleID, light_baryons::{p, n}};
+    pub const p_bar: ParticleID = p.anti();
+    pub const anti_proton: ParticleID = p_bar;
+    pub const n_bar: ParticleID = n.anti();
+    pub const anti_neutron: ParticleID = n_bar;
+}
+
 pub mod susy_anti_particles {
     use super::*;
 
@@ -598,7 +606,11 @@ impl ParticleID {
 
     /// Particle name in LaTeX format
     pub const fn latex_name(&self) -> Option<&'static str> {
+        // TODO: many missing
         use sm_elementary_particles::*;
+        use light_baryons::*;
+        use light_anti_baryons::*;
+
         let name = match *self {
             d => "d",
             u => "u",
@@ -629,6 +641,8 @@ impl ParticleID {
             H_plus  => "H^+",
             H_plus_plus => "H^{++}",
             a0 => "a_0",
+            p => "p",
+            n => "n",
 
             d_bar => r"\bar{d}",
             u_bar => r"\bar{u}",
@@ -650,6 +664,8 @@ impl ParticleID {
             W_prime_minus => "W^{--}",
             H_minus => "H^-",
             H_minus_minus => "H^{--}",
+            anti_proton => r"\bar{p}",
+            anti_neutron => r"\bar{p}",
 
             _ => return None,
         };
@@ -658,7 +674,10 @@ impl ParticleID {
 
     /// Name of the associated particle
     pub const fn name(&self) -> Option<&'static str> {
+        // TODO: many missing
         use sm_elementary_particles::*;
+        use light_baryons::*;
+        use light_anti_baryons::*;
         let name = match *self {
             d => "down",
             u => "up",
@@ -688,6 +707,8 @@ impl ParticleID {
             A0 => "pseudoscalar Higgs",
             H_plus  => "Higgs plus",
             H_plus_plus => "Higgs plus plus",
+            p => "proton",
+            n => "neutron",
 
             d_bar => "anti-down",
             u_bar => "anti-up",
@@ -709,6 +730,8 @@ impl ParticleID {
             W_prime_minus => "W minus minus",
             H_minus => "Higgs minus",
             H_minus_minus => "H minus minus",
+            p_bar => "anti-proton",
+            n_bar => "anti-neutron",
 
             _ => return None,
         };
