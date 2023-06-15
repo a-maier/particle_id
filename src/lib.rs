@@ -22,9 +22,8 @@ const fn concat<const A: usize, const B: usize, const C: usize>(
     b: [ParticleID; B],
 ) -> [ParticleID; C] {
     // Assert that `A + B == C`.
-    // These overflow if that is not the case, which produces an error at compile-time.
-    let _ = C - (A + B); // Assert that `A + B <= C`
-    let _ = (A + B) - C; // Assert that `A + B >= C`
+    // Any index other than `0` would panic, since we access out of bounds otherwise.
+    let _ = [0; 1][(A + B) - C]; // Assert that `A + B == C`
 
     let mut result = [ParticleID(0); C];
 
