@@ -17,540 +17,753 @@
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct ParticleID(i32);
 
+const fn concat<const A: usize, const B: usize, const C: usize>(
+    a: [ParticleID; A],
+    b: [ParticleID; B],
+) -> [ParticleID; C] {
+    // Assert that `A + B == C`.
+    // These overflow if that is not the case, which produces an error at compile-time.
+    let _ = C - (A + B); // Assert that `A + B <= C`
+    let _ = (A + B) - C; // Assert that `A + B >= C`
+
+    let mut result = [ParticleID(0); C];
+
+    let mut i = 0;
+    while i < A {
+        result[i] = a[i];
+        i += 1;
+    }
+
+    while i < A + B {
+        result[i] = b[i - A];
+        i += 1;
+    }
+
+    result
+}
+
+macro_rules! concat_arrays {
+    ($($arr:expr),*) => {
+        concat_arrays!(@concat $( [$arr ; $arr.len()] )*)
+    };
+
+    (@concat [$a:expr; $a_len:expr]) => {
+        $a
+    };
+
+    (@concat [$a:expr; $a_len:expr] [$b:expr; $b_len:expr] $($tail:tt)*) => {
+        concat_arrays!(
+            @concat
+                [crate::concat::<{ $a_len }, { $b_len }, { $a_len + $b_len }>($a, $b); $a_len + $b_len]
+                $($tail)*
+        )
+    };
+}
+
+macro_rules! count {
+    () => (0usize);
+    ( $x:tt $($xs:tt)* ) => (1usize + count!($($xs)*));
+}
+
+macro_rules! particle_set {
+    ($set:ident = {$($particle:ident: $id:literal,)*}) => {
+        $(
+            pub const $particle: ParticleID = ParticleID($id);
+        )*
+            pub const $set: [ParticleID;  count!($($particle)*)] = [
+                $($particle,)*
+            ];
+    };
+}
+
 pub mod quarks {
     use super::*;
-    pub const d: ParticleID = ParticleID(1);
+    particle_set!(
+        QUARKS = {
+            d: 1,
+            u: 2,
+            s: 3,
+            c: 4,
+            b: 5,
+            t: 6,
+            b_prime: 7,
+            t_prime: 9,
+        }
+    );
+
     pub const down: ParticleID = d;
-    pub const u: ParticleID = ParticleID(2);
     pub const up: ParticleID = u;
-    pub const s: ParticleID = ParticleID(3);
     pub const strange: ParticleID = s;
-    pub const c: ParticleID = ParticleID(4);
     pub const charm: ParticleID = c;
-    pub const b: ParticleID = ParticleID(5);
     pub const bottom: ParticleID = b;
-    pub const t: ParticleID = ParticleID(6);
     pub const top: ParticleID = t;
-    pub const b_prime: ParticleID = ParticleID(7);
-    pub const t_prime: ParticleID = ParticleID(9);
 }
 
 pub mod leptons {
     use super::*;
-    pub const e: ParticleID = ParticleID(11);
+    particle_set!(
+        LEPTONS = {
+            e: 11,
+            ν_e: 12,
+            μ: 13,
+            ν_μ: 14,
+            τ: 15,
+            ν_τ: 16,
+            τ_prime: 17,
+            ν_τ_prime: 18,
+        }
+    );
+
     pub const electron: ParticleID = e;
-    pub const ν_e: ParticleID = ParticleID(12);
     pub const nu_e: ParticleID = ν_e;
     pub const electron_neutrino: ParticleID = ν_e;
-    pub const μ: ParticleID = ParticleID(13);
     pub const mu: ParticleID = μ;
     pub const muon: ParticleID = μ;
-    pub const ν_μ: ParticleID = ParticleID(14);
     pub const nu_mu: ParticleID = ν_μ;
     pub const muon_neutrino: ParticleID = ν_μ;
-    pub const τ: ParticleID = ParticleID(15);
     pub const tau: ParticleID = τ;
-    pub const ν_τ: ParticleID = ParticleID(16);
     pub const nu_tau: ParticleID = ν_τ;
     pub const tau_neutrino: ParticleID = ν_τ;
-    pub const τ_prime: ParticleID = ParticleID(17);
     pub const tau_prime: ParticleID = τ_prime;
-    pub const ν_τ_prime: ParticleID = ParticleID(18);
     pub const nu_tau_prime: ParticleID = ν_τ_prime;
     pub const tau_prime_neutrino: ParticleID = ν_τ_prime;
 }
 
-pub mod gauge_and_higgs_bosons {
+pub mod gauge_bosons {
     use super::*;
-    pub const g: ParticleID = ParticleID(21);
+    particle_set!(
+        GAUGE_BOSONS = {
+            g: 21,
+            γ: 22,
+            Z: 23,
+            W_plus: 24,
+            Z_prime: 32,
+            Z_prime_prime: 33,
+            W_prime: 34,
+        }
+    );
     pub const gluon: ParticleID = g;
-    pub const γ: ParticleID = ParticleID(22);
     pub const gamma: ParticleID = γ;
     pub const photon: ParticleID = γ;
-    pub const Z: ParticleID = ParticleID(23);
-    pub const W_plus: ParticleID = ParticleID(24);
-    pub const h: ParticleID = ParticleID(25);
+}
+
+pub mod higgs_bosons {
+    use super::*;
+    particle_set!(
+        HIGGS_BOSONS = {
+            h: 25,
+            H0: 35,
+            A0: 36,
+            H_plus: 37,
+            H_plus_plus: 38,
+            a0: 40,
+        }
+    );
     pub const H: ParticleID = h;
     pub const Higgs: ParticleID = h;
-    pub const Z_prime: ParticleID = ParticleID(32);
-    pub const Z_prime_prime: ParticleID = ParticleID(33);
-    pub const W_prime: ParticleID = ParticleID(34);
-    pub const H0: ParticleID = ParticleID(35);
     pub const H_0: ParticleID = H0;
-    pub const A0: ParticleID = ParticleID(36);
     pub const A_0: ParticleID = A0;
-    pub const H_plus: ParticleID = ParticleID(37);
-    pub const H_plus_plus: ParticleID = ParticleID(38);
-    pub const a0: ParticleID = ParticleID(40);
     pub const a_0: ParticleID = a0;
+}
+
+pub mod gauge_and_higgs_bosons {
+    pub use super::gauge_bosons::*;
+    pub use super::higgs_bosons::*;
 }
 
 pub mod special_particles {
     use super::*;
-    pub const G: ParticleID = ParticleID(39);
+    particle_set!(
+        SPECIAL_PARTICLES = {
+            G: 39,
+            R_0: 41,
+            LQ_c: 42,
+            reggeon: 110,
+            pomeron: 990,
+            odderon: 9990,
+        }
+    );
     pub const graviton: ParticleID = G;
-    pub const R_0: ParticleID = ParticleID(41);
-    pub const LQ_c: ParticleID = ParticleID(42);
-    pub const reggeon: ParticleID = ParticleID(110);
-    pub const pomeron: ParticleID = ParticleID(990);
-    pub const odderon: ParticleID = ParticleID(9990);
 }
 
 pub mod diquarks {
     use super::*;
-    pub const dd_1: ParticleID = ParticleID(1103);
-    pub const ud_0: ParticleID = ParticleID(2101);
-    pub const ud_1: ParticleID = ParticleID(2103);
-    pub const uu_1: ParticleID = ParticleID(2203);
-    pub const sd_0: ParticleID = ParticleID(3101);
-    pub const sd_1: ParticleID = ParticleID(3103);
-    pub const su_0: ParticleID = ParticleID(3201);
-    pub const su_1: ParticleID = ParticleID(3203);
-    pub const ss_1: ParticleID = ParticleID(3303);
-    pub const cd_0: ParticleID = ParticleID(4101);
-    pub const cd_1: ParticleID = ParticleID(4103);
-    pub const cu_0: ParticleID = ParticleID(4201);
-    pub const cu_1: ParticleID = ParticleID(4203);
-    pub const cs_0: ParticleID = ParticleID(4301);
-    pub const cs_1: ParticleID = ParticleID(4303);
-    pub const cc_1: ParticleID = ParticleID(4403);
-    pub const bd_0: ParticleID = ParticleID(5101);
-    pub const bd_1: ParticleID = ParticleID(5103);
-    pub const bu_0: ParticleID = ParticleID(5201);
-    pub const bu_1: ParticleID = ParticleID(5203);
-    pub const bs_0: ParticleID = ParticleID(5301);
-    pub const bs_1: ParticleID = ParticleID(5303);
-    pub const bc_0: ParticleID = ParticleID(5401);
-    pub const bc_1: ParticleID = ParticleID(5403);
-    pub const bb_1: ParticleID = ParticleID(5503);
+    particle_set!(
+        DIQUARKS = {
+            dd_1: 1103,
+            ud_0: 2101,
+            ud_1: 2103,
+            uu_1: 2203,
+            sd_0: 3101,
+            sd_1: 3103,
+            su_0: 3201,
+            su_1: 3203,
+            ss_1: 3303,
+            cd_0: 4101,
+            cd_1: 4103,
+            cu_0: 4201,
+            cu_1: 4203,
+            cs_0: 4301,
+            cs_1: 4303,
+            cc_1: 4403,
+            bd_0: 5101,
+            bd_1: 5103,
+            bu_0: 5201,
+            bu_1: 5203,
+            bs_0: 5301,
+            bs_1: 5303,
+            bc_0: 5401,
+            bc_1: 5403,
+            bb_1: 5503,
+        }
+    );
 }
 
 pub mod susy_particles {
     use super::*;
-    pub const d_tilde_L: ParticleID = ParticleID(1000001);
-    pub const u_tilde_L: ParticleID = ParticleID(1000002);
-    pub const s_tilde_L: ParticleID = ParticleID(1000003);
-    pub const c_tilde_L: ParticleID = ParticleID(1000004);
-    pub const b_tilde_1: ParticleID = ParticleID(1000005);
-    pub const t_tilde_1: ParticleID = ParticleID(1000006);
-    pub const e_tilde_L: ParticleID = ParticleID(1000011);
-    pub const ν_e_tilde_L: ParticleID = ParticleID(1000012);
-    pub const μ_tilde_L: ParticleID = ParticleID(1000013);
-    pub const ν_μ_tilde_L: ParticleID = ParticleID(1000014);
-    pub const τ_tilde_1: ParticleID = ParticleID(1000015);
-    pub const ν_τ_tilde_L: ParticleID = ParticleID(1000016);
-    pub const d_tilde_R: ParticleID = ParticleID(2000001);
-    pub const u_tilde_R: ParticleID = ParticleID(2000002);
-    pub const s_tilde_R: ParticleID = ParticleID(2000003);
-    pub const c_tilde_R: ParticleID = ParticleID(2000004);
-    pub const b_tilde_2: ParticleID = ParticleID(2000005);
-    pub const t_tilde_2: ParticleID = ParticleID(2000006);
-    pub const e_tilde_R: ParticleID = ParticleID(2000011);
-    pub const μ_tilde_R: ParticleID = ParticleID(2000013);
-    pub const τ_tilde_2: ParticleID = ParticleID(2000015);
-    pub const g_tilde: ParticleID = ParticleID(1000021);
-    pub const χ_tilde_0_1: ParticleID = ParticleID(1000022);
-    pub const χ_tilde_0_2: ParticleID = ParticleID(1000023);
-    pub const χ_tilde_plus_1: ParticleID = ParticleID(1000024);
-    pub const χ_tilde_0_3: ParticleID = ParticleID(1000025);
-    pub const χ_tilde_0_4: ParticleID = ParticleID(1000035);
-    pub const χ_tilde_plus_2: ParticleID = ParticleID(1000037);
-    pub const G_tilde: ParticleID = ParticleID(1000039);
+    particle_set!(
+        SUSY_PARTICLES = {
+            d_tilde_L: 1000001,
+            u_tilde_L: 1000002,
+            s_tilde_L: 1000003,
+            c_tilde_L: 1000004,
+            b_tilde_1: 1000005,
+            t_tilde_1: 1000006,
+            e_tilde_L: 1000011,
+            ν_e_tilde_L: 1000012,
+            μ_tilde_L: 1000013,
+            ν_μ_tilde_L: 1000014,
+            τ_tilde_1: 1000015,
+            ν_τ_tilde_L: 1000016,
+            d_tilde_R: 2000001,
+            u_tilde_R: 2000002,
+            s_tilde_R: 2000003,
+            c_tilde_R: 2000004,
+            b_tilde_2: 2000005,
+            t_tilde_2: 2000006,
+            e_tilde_R: 2000011,
+            μ_tilde_R: 2000013,
+            τ_tilde_2: 2000015,
+            g_tilde: 1000021,
+            χ_tilde_0_1: 1000022,
+            χ_tilde_0_2: 1000023,
+            χ_tilde_plus_1: 1000024,
+            χ_tilde_0_3: 1000025,
+            χ_tilde_0_4: 1000035,
+            χ_tilde_plus_2: 1000037,
+            G_tilde: 1000039,
+        }
+    );
 }
 
 #[allow(non_snake_case)]
 pub mod light_Ieq1_mesons {
     use super::*;
-    pub const π_0: ParticleID = ParticleID(111);
-    pub const π_plus: ParticleID = ParticleID(211);
-    pub const a_0_980_0: ParticleID = ParticleID(9000111);
-    pub const a_0_980_plus: ParticleID = ParticleID(9000211);
-    pub const π_1300_0: ParticleID = ParticleID(100111);
-    pub const π_1300_plus: ParticleID = ParticleID(100211);
-    pub const a_0_1450_0: ParticleID = ParticleID(10111);
-    pub const a_0_1450_plus: ParticleID = ParticleID(10211);
-    pub const π_1800_0: ParticleID = ParticleID(9010111);
-    pub const π_1800_plus: ParticleID = ParticleID(9010211);
-    pub const ρ_770_0: ParticleID = ParticleID(113);
-    pub const ρ_770_plus: ParticleID = ParticleID(213);
-    pub const b_1_1235_0: ParticleID = ParticleID(10113);
-    pub const b_1_1235_plus: ParticleID = ParticleID(10213);
-    pub const a_1_1260_0: ParticleID = ParticleID(20113);
-    pub const a_1_1260_plus: ParticleID = ParticleID(20213);
-    pub const π_1_1400_0: ParticleID = ParticleID(9000113);
-    pub const π_1_1400_plus: ParticleID = ParticleID(9000213);
-    pub const ρ_1450_0: ParticleID = ParticleID(100113);
-    pub const ρ_1450_plus: ParticleID = ParticleID(100213);
-    pub const π_1_1600_0: ParticleID = ParticleID(9010113);
-    pub const π_1_1600_plus: ParticleID = ParticleID(9010213);
-    pub const a_1_1640_0: ParticleID = ParticleID(9020113);
-    pub const a_1_1640_plus: ParticleID = ParticleID(9020213);
-    pub const ρ_1700_0: ParticleID = ParticleID(30113);
-    pub const ρ_1700_plus: ParticleID = ParticleID(30213);
-    pub const ρ_1900_0: ParticleID = ParticleID(9030113);
-    pub const ρ_1900_plus: ParticleID = ParticleID(9030213);
-    pub const ρ_2150_0: ParticleID = ParticleID(9040113);
-    pub const ρ_2150_plus: ParticleID = ParticleID(9040213);
-    pub const a_2_1320_0: ParticleID = ParticleID(115);
-    pub const a_2_1320_plus: ParticleID = ParticleID(215);
-    pub const π_2_1670_0: ParticleID = ParticleID(10115);
-    pub const π_2_1670_plus: ParticleID = ParticleID(10215);
-    pub const a_2_1700_0: ParticleID = ParticleID(9000115);
-    pub const a_2_1700_plus: ParticleID = ParticleID(9000215);
-    pub const π_2_2100_0: ParticleID = ParticleID(9010115);
-    pub const π_2_2100_plus: ParticleID = ParticleID(9010215);
-    pub const ρ_3_1690_0: ParticleID = ParticleID(117);
-    pub const ρ_3_1690_plus: ParticleID = ParticleID(217);
-    pub const ρ_3_1990_0: ParticleID = ParticleID(9000117);
-    pub const ρ_3_1990_plus: ParticleID = ParticleID(9000217);
-    pub const ρ_3_2250_0: ParticleID = ParticleID(9010117);
-    pub const ρ_3_2250_plus: ParticleID = ParticleID(9010217);
-    pub const a_4_2040_0: ParticleID = ParticleID(119);
-    pub const a_4_2040_plus: ParticleID = ParticleID(219);
+    particle_set!(
+        LIGHT_IEQ1_MESONS = {
+            π_0: 111,
+            π_plus: 211,
+            a_0_980_0: 9000111,
+            a_0_980_plus: 9000211,
+            π_1300_0: 100111,
+            π_1300_plus: 100211,
+            a_0_1450_0: 10111,
+            a_0_1450_plus: 10211,
+            π_1800_0: 9010111,
+            π_1800_plus: 9010211,
+            ρ_770_0: 113,
+            ρ_770_plus: 213,
+            b_1_1235_0: 10113,
+            b_1_1235_plus: 10213,
+            a_1_1260_0: 20113,
+            a_1_1260_plus: 20213,
+            π_1_1400_0: 9000113,
+            π_1_1400_plus: 9000213,
+            ρ_1450_0: 100113,
+            ρ_1450_plus: 100213,
+            π_1_1600_0: 9010113,
+            π_1_1600_plus: 9010213,
+            a_1_1640_0: 9020113,
+            a_1_1640_plus: 9020213,
+            ρ_1700_0: 30113,
+            ρ_1700_plus: 30213,
+            ρ_1900_0: 9030113,
+            ρ_1900_plus: 9030213,
+            ρ_2150_0: 9040113,
+            ρ_2150_plus: 9040213,
+            a_2_1320_0: 115,
+            a_2_1320_plus: 215,
+            π_2_1670_0: 10115,
+            π_2_1670_plus: 10215,
+            a_2_1700_0: 9000115,
+            a_2_1700_plus: 9000215,
+            π_2_2100_0: 9010115,
+            π_2_2100_plus: 9010215,
+            ρ_3_1690_0: 117,
+            ρ_3_1690_plus: 217,
+            ρ_3_1990_0: 9000117,
+            ρ_3_1990_plus: 9000217,
+            ρ_3_2250_0: 9010117,
+            ρ_3_2250_plus: 9010217,
+            a_4_2040_0: 119,
+            a_4_2040_plus: 219,
+        }
+    );
 }
 
 #[allow(non_snake_case)]
 pub mod light_Ieq0_mesons {
     use super::*;
-    pub const η: ParticleID = ParticleID(221);
-    pub const η_prime_958: ParticleID = ParticleID(331);
-    pub const f_0_500: ParticleID = ParticleID(9000221);
-    pub const f_0_980: ParticleID = ParticleID(9010221);
-    pub const η_1295: ParticleID = ParticleID(100221);
-    pub const f_0_1370: ParticleID = ParticleID(10221);
-    pub const η_1405: ParticleID = ParticleID(9020221);
-    pub const η_1475: ParticleID = ParticleID(100331);
-    pub const f_0_1500: ParticleID = ParticleID(9030221);
-    pub const f_0_1710: ParticleID = ParticleID(10331);
-    pub const η_1760: ParticleID = ParticleID(9040221);
-    pub const f0_2020: ParticleID = ParticleID(9050221);
-    pub const f0_2100: ParticleID = ParticleID(9060221);
-    pub const f0_2200: ParticleID = ParticleID(9070221);
-    pub const η_2225: ParticleID = ParticleID(9080221);
-    pub const ω_782: ParticleID = ParticleID(223);
-    pub const φ_1020: ParticleID = ParticleID(333);
-    pub const h_1_1170: ParticleID = ParticleID(10223);
-    pub const f_1_1285: ParticleID = ParticleID(20223);
-    pub const h_1_1380: ParticleID = ParticleID(10333);
-    pub const f_1_1420: ParticleID = ParticleID(20333);
-    pub const ω_1420: ParticleID = ParticleID(100223);
-    pub const f_1_1510: ParticleID = ParticleID(9000223);
-    pub const h_1_1595: ParticleID = ParticleID(9010223);
-    pub const ω_1650: ParticleID = ParticleID(30223);
-    pub const φ_1680: ParticleID = ParticleID(100333);
-    pub const f_2_1270: ParticleID = ParticleID(225);
-    pub const f_2_1430: ParticleID = ParticleID(9000225);
-    pub const f_2_prime_1525: ParticleID = ParticleID(335);
-    pub const f_2_1565: ParticleID = ParticleID(9010225);
-    pub const f_2_1640: ParticleID = ParticleID(9020225);
-    pub const η_2_1645: ParticleID = ParticleID(10225);
-    pub const f_2_1810: ParticleID = ParticleID(9030225);
-    pub const η_2_1870: ParticleID = ParticleID(10335);
-    pub const f_2_1910: ParticleID = ParticleID(9040225);
-    pub const f_2_1950: ParticleID = ParticleID(9050225);
-    pub const f_2_2010: ParticleID = ParticleID(9060225);
-    pub const f_2_2150: ParticleID = ParticleID(9070225);
-    pub const f_2_2300: ParticleID = ParticleID(9080225);
-    pub const f_2_2340: ParticleID = ParticleID(9090225);
-    pub const ω_3_1670: ParticleID = ParticleID(227);
-    pub const φ_3_1850: ParticleID = ParticleID(337);
-    pub const f_4_2050: ParticleID = ParticleID(229);
-    pub const f_J_2220: ParticleID = ParticleID(9000229);
-    pub const f_4_2300: ParticleID = ParticleID(9010229);
+    particle_set!(
+        LIGHT_IEQ0_MESONS = {
+            η: 221,
+            η_prime_958: 331,
+            f_0_500: 9000221,
+            f_0_980: 9010221,
+            η_1295: 100221,
+            f_0_1370: 10221,
+            η_1405: 9020221,
+            η_1475: 100331,
+            f_0_1500: 9030221,
+            f_0_1710: 10331,
+            η_1760: 9040221,
+            f0_2020: 9050221,
+            f0_2100: 9060221,
+            f0_2200: 9070221,
+            η_2225: 9080221,
+            ω_782: 223,
+            φ_1020: 333,
+            h_1_1170: 10223,
+            f_1_1285: 20223,
+            h_1_1380: 10333,
+            f_1_1420: 20333,
+            ω_1420: 100223,
+            f_1_1510: 9000223,
+            h_1_1595: 9010223,
+            ω_1650: 30223,
+            φ_1680: 100333,
+            f_2_1270: 225,
+            f_2_1430: 9000225,
+            f_2_prime_1525: 335,
+            f_2_1565: 9010225,
+            f_2_1640: 9020225,
+            η_2_1645: 10225,
+            f_2_1810: 9030225,
+            η_2_1870: 10335,
+            f_2_1910: 9040225,
+            f_2_1950: 9050225,
+            f_2_2010: 9060225,
+            f_2_2150: 9070225,
+            f_2_2300: 9080225,
+            f_2_2340: 9090225,
+            ω_3_1670: 227,
+            φ_3_1850: 337,
+            f_4_2050: 229,
+            f_J_2220: 9000229,
+            f_4_2300: 9010229,
+        }
+    );
+}
+
+pub mod light_mesons {
+    use crate::ParticleID;
+
+    pub use super::light_Ieq0_mesons::*;
+    pub use super::light_Ieq1_mesons::*;
+    pub const LIGHT_MESONS: [ParticleID; 91] = concat_arrays!(
+        LIGHT_IEQ0_MESONS,
+        LIGHT_IEQ1_MESONS
+    );
 }
 
 pub mod strange_mesons {
     use super::*;
-    pub const K_0_L: ParticleID = ParticleID(130);
-    pub const K_0_S: ParticleID = ParticleID(310);
-    pub const K_0: ParticleID = ParticleID(311);
-    pub const K_plus: ParticleID = ParticleID(321);
-    pub const K_0_star_700_0: ParticleID = ParticleID(9000311);
-    pub const K_0_star_700_plus: ParticleID = ParticleID(9000321);
-    pub const K_0_star_1430_0: ParticleID = ParticleID(10311);
-    pub const K_0_star_1430_plus: ParticleID = ParticleID(10321);
-    pub const K_1460_0: ParticleID = ParticleID(100311);
-    pub const K_1460_plus: ParticleID = ParticleID(100321);
-    pub const K_1830_0: ParticleID = ParticleID(9010311);
-    pub const K_1830_plus: ParticleID = ParticleID(9010321);
-    pub const K_0_star_1950_0: ParticleID = ParticleID(9020311);
-    pub const K_0_star_1950_plus: ParticleID = ParticleID(9020321);
-    pub const K_star_892_0: ParticleID = ParticleID(313);
-    pub const K_star_892_plus: ParticleID = ParticleID(323);
-    pub const K_1_1270_0: ParticleID = ParticleID(10313);
-    pub const K_1_1270_plus: ParticleID = ParticleID(10323);
-    pub const K_1_1400_0: ParticleID = ParticleID(20313);
-    pub const K_1_1400_plus: ParticleID = ParticleID(20323);
-    pub const K_star_1410_0: ParticleID = ParticleID(100313);
-    pub const K_star_1410_plus: ParticleID = ParticleID(100323);
-    pub const K_1_1650_0: ParticleID = ParticleID(9000313);
-    pub const K_1_1650_plus: ParticleID = ParticleID(9000323);
-    pub const K_star_1680_0: ParticleID = ParticleID(30313);
-    pub const K_star_1680_plus: ParticleID = ParticleID(30323);
-    pub const K_2_star_1430_0: ParticleID = ParticleID(315);
-    pub const K_2_star_1430_plus: ParticleID = ParticleID(325);
-    pub const K_2_1580_0: ParticleID = ParticleID(9000315);
-    pub const K_2_1580_plus: ParticleID = ParticleID(9000325);
-    pub const K_2_1770_0: ParticleID = ParticleID(10315);
-    pub const K_2_1770_plus: ParticleID = ParticleID(10325);
-    pub const K_2_1820_0: ParticleID = ParticleID(20315);
-    pub const K_2_1820_plus: ParticleID = ParticleID(20325);
-    pub const K_2_star_1980_0: ParticleID = ParticleID(9010315);
-    pub const K_2_star_1980_plus: ParticleID = ParticleID(9010325);
-    pub const K_2_2250_0: ParticleID = ParticleID(9020315);
-    pub const K_2_2250_plus: ParticleID = ParticleID(9020325);
-    pub const K_3_star_1780_0: ParticleID = ParticleID(317);
-    pub const K_3_star_1780_plus: ParticleID = ParticleID(327);
-    pub const K_3_2320_0: ParticleID = ParticleID(9010317);
-    pub const K_3_2320_plus: ParticleID = ParticleID(9010327);
-    pub const K_4_star_2045_0: ParticleID = ParticleID(319);
-    pub const K_4_star_2045_plus: ParticleID = ParticleID(329);
-    pub const K_4_2500_0: ParticleID = ParticleID(9000319);
-    pub const K_4_2500_plus: ParticleID = ParticleID(9000329);
+    particle_set!(
+        STRANGE_MESONS = {
+            K_0_L: 130,
+            K_0_S: 310,
+            K_0: 311,
+            K_plus: 321,
+            K_0_star_700_0: 9000311,
+            K_0_star_700_plus: 9000321,
+            K_0_star_1430_0: 10311,
+            K_0_star_1430_plus: 10321,
+            K_1460_0: 100311,
+            K_1460_plus: 100321,
+            K_1830_0: 9010311,
+            K_1830_plus: 9010321,
+            K_0_star_1950_0: 9020311,
+            K_0_star_1950_plus: 9020321,
+            K_star_892_0: 313,
+            K_star_892_plus: 323,
+            K_1_1270_0: 10313,
+            K_1_1270_plus: 10323,
+            K_1_1400_0: 20313,
+            K_1_1400_plus: 20323,
+            K_star_1410_0: 100313,
+            K_star_1410_plus: 100323,
+            K_1_1650_0: 9000313,
+            K_1_1650_plus: 9000323,
+            K_star_1680_0: 30313,
+            K_star_1680_plus: 30323,
+            K_2_star_1430_0: 315,
+            K_2_star_1430_plus: 325,
+            K_2_1580_0: 9000315,
+            K_2_1580_plus: 9000325,
+            K_2_1770_0: 10315,
+            K_2_1770_plus: 10325,
+            K_2_1820_0: 20315,
+            K_2_1820_plus: 20325,
+            K_2_star_1980_0: 9010315,
+            K_2_star_1980_plus: 9010325,
+            K_2_2250_0: 9020315,
+            K_2_2250_plus: 9020325,
+            K_3_star_1780_0: 317,
+            K_3_star_1780_plus: 327,
+            K_3_2320_0: 9010317,
+            K_3_2320_plus: 9010327,
+            K_4_star_2045_0: 319,
+            K_4_star_2045_plus: 329,
+            K_4_2500_0: 9000319,
+            K_4_2500_plus: 9000329,
+        }
+    );
 }
 
 pub mod charmed_mesons {
     use super::*;
-    pub const D_plus: ParticleID = ParticleID(411);
-    pub const D_0: ParticleID = ParticleID(421);
-    pub const D_0_star_2400_plus: ParticleID = ParticleID(10411);
-    pub const D_0_star_2400_0: ParticleID = ParticleID(10421);
-    pub const D_star_2010_plus: ParticleID = ParticleID(413);
-    pub const D_star_2007_0: ParticleID = ParticleID(423);
-    pub const D_1_2420_plus: ParticleID = ParticleID(10413);
-    pub const D_1_2420_0: ParticleID = ParticleID(10423);
-    pub const D_1_H_plus: ParticleID = ParticleID(20413);
-    pub const D_1_2430_0: ParticleID = ParticleID(20423);
-    pub const D_2_star_2460_plus: ParticleID = ParticleID(415);
-    pub const D_2_star_2460_0: ParticleID = ParticleID(425);
-    pub const D_s_plus: ParticleID = ParticleID(431);
-    pub const D_s0_star_2317_plus: ParticleID = ParticleID(10431);
-    pub const D_s_star_plus: ParticleID = ParticleID(433);
-    pub const D_s_1_2536_plus: ParticleID = ParticleID(10433);
-    pub const D_s_1_2460_plus: ParticleID = ParticleID(20433);
-    pub const D_s_2_star_2573_plus: ParticleID = ParticleID(435);
+
+    particle_set!(
+        CHARMED_MESONS = {
+            D_plus: 411,
+            D_0: 421,
+            D_0_star_2400_plus: 10411,
+            D_0_star_2400_0: 10421,
+            D_star_2010_plus: 413,
+            D_star_2007_0: 423,
+            D_1_2420_plus: 10413,
+            D_1_2420_0: 10423,
+            D_1_H_plus: 20413,
+            D_1_2430_0: 20423,
+            D_2_star_2460_plus: 415,
+            D_2_star_2460_0: 425,
+            D_s_plus: 431,
+            D_s0_star_2317_plus: 10431,
+            D_s_star_plus: 433,
+            D_s_1_2536_plus: 10433,
+            D_s_1_2460_plus: 20433,
+            D_s_2_star_2573_plus: 435,
+        }
+    );
 }
 
 pub mod bottom_mesons {
     use super::*;
-    pub const B_0: ParticleID = ParticleID(511);
-    pub const B_plus: ParticleID = ParticleID(521);
-    pub const B_0_star_0: ParticleID = ParticleID(10511);
-    pub const B_0_star_plus: ParticleID = ParticleID(10521);
-    pub const B_star_0: ParticleID = ParticleID(513);
-    pub const B_star_plus: ParticleID = ParticleID(523);
-    pub const B_1_L_0: ParticleID = ParticleID(10513);
-    pub const B_1_L_plus: ParticleID = ParticleID(10523);
-    pub const B_1_H_0: ParticleID = ParticleID(20513);
-    pub const B_1_H_plus: ParticleID = ParticleID(20523);
-    pub const B_2_star0: ParticleID = ParticleID(515);
-    pub const B_2_star_plus: ParticleID = ParticleID(525);
-    pub const B_s_0: ParticleID = ParticleID(531);
-    pub const B_s_0_star_0: ParticleID = ParticleID(10531);
-    pub const B_s_star_0: ParticleID = ParticleID(533);
-    pub const B_s_1_L_0: ParticleID = ParticleID(10533);
-    pub const B_s_1_H_0: ParticleID = ParticleID(20533);
-    pub const B_s_2_star_0: ParticleID = ParticleID(535);
-    pub const B_c_plus: ParticleID = ParticleID(541);
-    pub const B_c_0_star_plus: ParticleID = ParticleID(10541);
-    pub const B_c_star_plus: ParticleID = ParticleID(543);
-    pub const B_c_1_L_plus: ParticleID = ParticleID(10543);
-    pub const B_c_1_H_plus: ParticleID = ParticleID(20543);
-    pub const B_c_2_star_plus: ParticleID = ParticleID(545);
+    particle_set!(
+        BOTTOM_MESONS = {
+            B_0: 511,
+            B_plus: 521,
+            B_0_star_0: 10511,
+            B_0_star_plus: 10521,
+            B_star_0: 513,
+            B_star_plus: 523,
+            B_1_L_0: 10513,
+            B_1_L_plus: 10523,
+            B_1_H_0: 20513,
+            B_1_H_plus: 20523,
+            B_2_star0: 515,
+            B_2_star_plus: 525,
+            B_s_0: 531,
+            B_s_0_star_0: 10531,
+            B_s_star_0: 533,
+            B_s_1_L_0: 10533,
+            B_s_1_H_0: 20533,
+            B_s_2_star_0: 535,
+            B_c_plus: 541,
+            B_c_0_star_plus: 10541,
+            B_c_star_plus: 543,
+            B_c_1_L_plus: 10543,
+            B_c_1_H_plus: 20543,
+            B_c_2_star_plus: 545,
+        }
+    );
 }
 
 pub mod ccbar_mesons {
     use super::*;
-    pub const η_c_1S: ParticleID = ParticleID(441);
-    pub const χ_c_0_1P: ParticleID = ParticleID(10441);
-    pub const η_c_2S: ParticleID = ParticleID(100441);
-    pub const Jψ_1S: ParticleID = ParticleID(443);
-    pub const h_c_1P: ParticleID = ParticleID(10443);
-    pub const χ_c_1_1P: ParticleID = ParticleID(20443);
-    pub const ψ_2S: ParticleID = ParticleID(100443);
-    pub const ψ_3770: ParticleID = ParticleID(30443);
-    pub const ψ_4040: ParticleID = ParticleID(9000443);
-    pub const ψ_4160: ParticleID = ParticleID(9010443);
-    pub const ψ_4415: ParticleID = ParticleID(9020443);
-    pub const χ_c_2_1P: ParticleID = ParticleID(445);
-    pub const χ_c_2_3930: ParticleID = ParticleID(100445);
+    particle_set!(
+        CCBAR_MESONS = {
+            η_c_1S: 441,
+            χ_c_0_1P: 10441,
+            η_c_2S: 100441,
+            Jψ_1S: 443,
+            h_c_1P: 10443,
+            χ_c_1_1P: 20443,
+            ψ_2S: 100443,
+            ψ_3770: 30443,
+            ψ_4040: 9000443,
+            ψ_4160: 9010443,
+            ψ_4415: 9020443,
+            χ_c_2_1P: 445,
+            χ_c_2_3930: 100445,
+        }
+    );
 }
 
 pub mod bbbar_mesons {
     use super::*;
-    pub const η_b_1S: ParticleID = ParticleID(551);
-    pub const χ_b_0_1P: ParticleID = ParticleID(10551);
-    pub const η_b_2S: ParticleID = ParticleID(100551);
-    pub const χ_b_0_2P: ParticleID = ParticleID(110551);
-    pub const η_b_3S: ParticleID = ParticleID(200551);
-    pub const χ_b_0_3P: ParticleID = ParticleID(210551);
-    pub const Υ_1S: ParticleID = ParticleID(553);
-    pub const h_b_1P: ParticleID = ParticleID(10553);
-    pub const χ_b_1_1P: ParticleID = ParticleID(20553);
-    pub const Υ_1_1D: ParticleID = ParticleID(30553);
-    pub const Υ_2S: ParticleID = ParticleID(100553);
-    pub const h_b_2P: ParticleID = ParticleID(110553);
-    pub const χ_b_1_2P: ParticleID = ParticleID(120553);
-    pub const Υ_1_2D: ParticleID = ParticleID(130553);
-    pub const Υ_3S: ParticleID = ParticleID(200553);
-    pub const h_b_3P: ParticleID = ParticleID(210553);
-    pub const χ_b_1_3P: ParticleID = ParticleID(220553);
-    pub const Υ_4S: ParticleID = ParticleID(300553);
-    pub const Υ_10860: ParticleID = ParticleID(9000553);
-    pub const Υ_11020: ParticleID = ParticleID(9010553);
-    pub const χ_b_2_1P: ParticleID = ParticleID(555);
-    pub const η_b_2_1D: ParticleID = ParticleID(10555);
-    pub const Υ_2_1D: ParticleID = ParticleID(20555);
-    pub const χ_b_2_2P: ParticleID = ParticleID(100555);
-    pub const η_b_2_2D: ParticleID = ParticleID(110555);
-    pub const Υ_2_2D: ParticleID = ParticleID(120555);
-    pub const χ_b_2_3P: ParticleID = ParticleID(200555);
-    pub const Υ_3_1D: ParticleID = ParticleID(557);
-    pub const Υ_3_2D: ParticleID = ParticleID(100557);
+    particle_set!(
+        BBBAR_MESONS = {
+            η_b_1S: 551,
+            χ_b_0_1P: 10551,
+            η_b_2S: 100551,
+            χ_b_0_2P: 110551,
+            η_b_3S: 200551,
+            χ_b_0_3P: 210551,
+            Υ_1S: 553,
+            h_b_1P: 10553,
+            χ_b_1_1P: 20553,
+            Υ_1_1D: 30553,
+            Υ_2S: 100553,
+            h_b_2P: 110553,
+            χ_b_1_2P: 120553,
+            Υ_1_2D: 130553,
+            Υ_3S: 200553,
+            h_b_3P: 210553,
+            χ_b_1_3P: 220553,
+            Υ_4S: 300553,
+            Υ_10860: 9000553,
+            Υ_11020: 9010553,
+            χ_b_2_1P: 555,
+            η_b_2_1D: 10555,
+            Υ_2_1D: 20555,
+            χ_b_2_2P: 100555,
+            η_b_2_2D: 110555,
+            Υ_2_2D: 120555,
+            χ_b_2_3P: 200555,
+            Υ_3_1D: 557,
+            Υ_3_2D: 100557,
+        }
+    );
+}
+
+pub mod mesons {
+    use crate::ParticleID;
+
+    pub use super::light_mesons::*;
+    pub use super::strange_mesons::*;
+    pub use super::charmed_mesons::*;
+    pub use super::bottom_mesons::*;
+    pub use super::ccbar_mesons::*;
+    pub use super::bbbar_mesons::*;
+    pub const MESONS: [ParticleID; 221] = concat_arrays!(
+        LIGHT_MESONS,
+        STRANGE_MESONS,
+        CHARMED_MESONS,
+        BOTTOM_MESONS,
+        CCBAR_MESONS,
+        BBBAR_MESONS
+    );
 }
 
 pub mod light_baryons {
     use super::*;
-    pub const p: ParticleID = ParticleID(2212);
+
+    particle_set!(
+        LIGHT_BARYONS = {
+            p: 2212,
+            n: 2112,
+            Δ_plus_plus: 2224,
+            Δ_plus: 2214,
+            Δ_0: 2114,
+            Δ_minus: 1114,
+        }
+    );
     pub const proton: ParticleID = p;
-    pub const n: ParticleID = ParticleID(2112);
     pub const neutron: ParticleID = n;
-    pub const Δ_plus_plus: ParticleID = ParticleID(2224);
-    pub const Δ_plus: ParticleID = ParticleID(2214);
-    pub const Δ_0: ParticleID = ParticleID(2114);
-    pub const Δ_minus: ParticleID = ParticleID(1114);
 }
 
 pub mod strange_baryons {
     use super::*;
-    pub const Λ: ParticleID = ParticleID(3122);
-    pub const Σ_plus: ParticleID = ParticleID(3222);
-    pub const Σ_0: ParticleID = ParticleID(3212);
-    pub const Σ_minus: ParticleID = ParticleID(3112);
-    pub const Σ_star_plus: ParticleID = ParticleID(3224);
-    pub const Σ_star_0: ParticleID = ParticleID(3214);
-    pub const Σ_star_minus: ParticleID = ParticleID(3114);
-    pub const Ξ_0: ParticleID = ParticleID(3322);
-    pub const Ξ_minus: ParticleID = ParticleID(3312);
-    pub const Ξ_star_0: ParticleID = ParticleID(3324);
-    pub const Ξ_star_minus: ParticleID = ParticleID(3314);
-    pub const Ω_minus: ParticleID = ParticleID(3334);
+    particle_set!(
+        STRANGE_BARYONS = {
+            Λ: 3122,
+            Σ_plus: 3222,
+            Σ_0: 3212,
+            Σ_minus: 3112,
+            Σ_star_plus: 3224,
+            Σ_star_0: 3214,
+            Σ_star_minus: 3114,
+            Ξ_0: 3322,
+            Ξ_minus: 3312,
+            Ξ_star_0: 3324,
+            Ξ_star_minus: 3314,
+            Ω_minus: 3334,
+        }
+    );
 }
 
 pub mod charmed_baryons {
     use super::*;
-    pub const Λ_c_plus: ParticleID = ParticleID(4122);
-    pub const Σ_c_plus_plus: ParticleID = ParticleID(4222);
-    pub const Σ_c_plus: ParticleID = ParticleID(4212);
-    pub const Σ_c_0: ParticleID = ParticleID(4112);
-    pub const Σ_c_star_plus_plus: ParticleID = ParticleID(4224);
-    pub const Σ_c_star_plus: ParticleID = ParticleID(4214);
-    pub const Σ_c_star_0: ParticleID = ParticleID(4114);
-    pub const Ξ_c_plus: ParticleID = ParticleID(4232);
-    pub const Ξ_c_0: ParticleID = ParticleID(4132);
-    pub const Ξ_c_prime_plus: ParticleID = ParticleID(4322);
-    pub const Ξ_c_prime_0: ParticleID = ParticleID(4312);
-    pub const Ξ_c_star_plus: ParticleID = ParticleID(4324);
-    pub const Ξ_c_star_0: ParticleID = ParticleID(4314);
-    pub const Ω_c_0: ParticleID = ParticleID(4332);
-    pub const Ω_c_star_0: ParticleID = ParticleID(4334);
-    pub const Ξ_c_c_plus: ParticleID = ParticleID(4412);
-    pub const Ξ_c_c_plus_plus: ParticleID = ParticleID(4422);
-    pub const Ξ_c_c_star_plus: ParticleID = ParticleID(4414);
-    pub const Ξ_c_c_star_plus_plus: ParticleID = ParticleID(4424);
-    pub const Ω_c_c_plus: ParticleID = ParticleID(4432);
-    pub const Ω_c_c_star_plus: ParticleID = ParticleID(4434);
-    pub const Ω_c_c_c_plus_plus: ParticleID = ParticleID(4444);
+    particle_set!(
+        CHARMED_BARYONS = {
+            Λ_c_plus: 4122,
+            Σ_c_plus_plus: 4222,
+            Σ_c_plus: 4212,
+            Σ_c_0: 4112,
+            Σ_c_star_plus_plus: 4224,
+            Σ_c_star_plus: 4214,
+            Σ_c_star_0: 4114,
+            Ξ_c_plus: 4232,
+            Ξ_c_0: 4132,
+            Ξ_c_prime_plus: 4322,
+            Ξ_c_prime_0: 4312,
+            Ξ_c_star_plus: 4324,
+            Ξ_c_star_0: 4314,
+            Ω_c_0: 4332,
+            Ω_c_star_0: 4334,
+            Ξ_c_c_plus: 4412,
+            Ξ_c_c_plus_plus: 4422,
+            Ξ_c_c_star_plus: 4414,
+            Ξ_c_c_star_plus_plus: 4424,
+            Ω_c_c_plus: 4432,
+            Ω_c_c_star_plus: 4434,
+            Ω_c_c_c_plus_plus: 4444,
+        }
+    );
 }
 
 pub mod bottom_baryons {
     use super::*;
-    pub const Λ_b_0: ParticleID = ParticleID(5122);
-    pub const Σ_b_minus: ParticleID = ParticleID(5112);
-    pub const Σ_b0: ParticleID = ParticleID(5212);
-    pub const Σ_b_plus: ParticleID = ParticleID(5222);
-    pub const Σ_b_star_minus: ParticleID = ParticleID(5114);
-    pub const Σ_b_star_0: ParticleID = ParticleID(5214);
-    pub const Σ_b_star_plus: ParticleID = ParticleID(5224);
-    pub const Ξ_b_minus: ParticleID = ParticleID(5132);
-    pub const Ξ_b_0: ParticleID = ParticleID(5232);
-    pub const Ξ_b_prime_minus: ParticleID = ParticleID(5312);
-    pub const Ξ_b_prime_0: ParticleID = ParticleID(5322);
-    pub const Ξ_b_star_minus: ParticleID = ParticleID(5314);
-    pub const Ξ_b_star_0: ParticleID = ParticleID(5324);
-    pub const Ω_b_minus: ParticleID = ParticleID(5332);
-    pub const Ω_b_star_minus: ParticleID = ParticleID(5334);
-    pub const Ξ_b_c_0: ParticleID = ParticleID(5142);
-    pub const Ξ_b_c_plus: ParticleID = ParticleID(5242);
-    pub const Ξ_b_c_prime_0: ParticleID = ParticleID(5412);
-    pub const Ξ_b_c_prime_plus: ParticleID = ParticleID(5422);
-    pub const Ξ_b_c_star0: ParticleID = ParticleID(5414);
-    pub const Ξ_b_c_star_plus: ParticleID = ParticleID(5424);
-    pub const Ω_b_c_0: ParticleID = ParticleID(5342);
-    pub const Ω_b_c_prime_0: ParticleID = ParticleID(5432);
-    pub const Ω_b_c_star0: ParticleID = ParticleID(5434);
-    pub const Ω_b_c_c_plus: ParticleID = ParticleID(5442);
-    pub const Ω_b_c_c_star_plus: ParticleID = ParticleID(5444);
-    pub const Ξ_b_b_minus: ParticleID = ParticleID(5512);
-    pub const Ξ_b_b_0: ParticleID = ParticleID(5522);
-    pub const Ξ_b_b_star_minus: ParticleID = ParticleID(5514);
-    pub const Ξ_b_b_star_0: ParticleID = ParticleID(5524);
-    pub const Ω_b_b_minus: ParticleID = ParticleID(5532);
-    pub const Ω_b_b_star_minus: ParticleID = ParticleID(5534);
-    pub const Ω_b_b_c_0: ParticleID = ParticleID(5542);
-    pub const Ω_b_b_c_star0: ParticleID = ParticleID(5544);
-    pub const Ω_b_b_b_minus: ParticleID = ParticleID(5554);
+    particle_set!(
+        BOTTOM_BARYONS = {
+            Λ_b_0: 5122,
+            Σ_b_minus: 5112,
+            Σ_b0: 5212,
+            Σ_b_plus: 5222,
+            Σ_b_star_minus: 5114,
+            Σ_b_star_0: 5214,
+            Σ_b_star_plus: 5224,
+            Ξ_b_minus: 5132,
+            Ξ_b_0: 5232,
+            Ξ_b_prime_minus: 5312,
+            Ξ_b_prime_0: 5322,
+            Ξ_b_star_minus: 5314,
+            Ξ_b_star_0: 5324,
+            Ω_b_minus: 5332,
+            Ω_b_star_minus: 5334,
+            Ξ_b_c_0: 5142,
+            Ξ_b_c_plus: 5242,
+            Ξ_b_c_prime_0: 5412,
+            Ξ_b_c_prime_plus: 5422,
+            Ξ_b_c_star0: 5414,
+            Ξ_b_c_star_plus: 5424,
+            Ω_b_c_0: 5342,
+            Ω_b_c_prime_0: 5432,
+            Ω_b_c_star0: 5434,
+            Ω_b_c_c_plus: 5442,
+            Ω_b_c_c_star_plus: 5444,
+            Ξ_b_b_minus: 5512,
+            Ξ_b_b_0: 5522,
+            Ξ_b_b_star_minus: 5514,
+            Ξ_b_b_star_0: 5524,
+            Ω_b_b_minus: 5532,
+            Ω_b_b_star_minus: 5534,
+            Ω_b_b_c_0: 5542,
+            Ω_b_b_c_star0: 5544,
+            Ω_b_b_b_minus: 5554,
+        }
+    );
 }
 
 pub mod pentaquarks {
     use super::*;
-    pub const Θ_plus: ParticleID = ParticleID(100221132);
-    pub const Φ_minus_minus: ParticleID = ParticleID(100331122);
+    particle_set!(
+        PENTAQUARKS = {
+            Θ_plus: 100221132,
+            Φ_minus_minus: 100331122,
+        }
+    );
 }
+
+pub mod baryons {
+    use crate::ParticleID;
+
+    pub use super::light_baryons::*;
+    pub use super::strange_baryons::*;
+    pub use super::charmed_baryons::*;
+    pub use super::bottom_baryons::*;
+    pub const BARYONS: [ParticleID; 75] = concat_arrays!(
+        LIGHT_BARYONS,
+        STRANGE_BARYONS,
+        CHARMED_BARYONS,
+        BOTTOM_BARYONS
+    );
+}
+
+pub mod hadrons {
+    use crate::ParticleID;
+
+    pub use super::mesons::MESONS;
+    pub use super::baryons::BARYONS;
+    pub const HADRONS: [ParticleID; 296] = concat_arrays!(
+        MESONS,
+        BARYONS
+    );
+}
+
 
 pub mod anti_quarks {
     use super::*;
-    pub const d_bar: ParticleID = ParticleID(-1);
+    particle_set!(
+        ANTI_QUARKS = {
+            d_bar: -1,
+            u_bar: -2,
+            s_bar: -3,
+            c_bar: -4,
+            b_bar: -5,
+            t_bar: -6,
+            b_prime_bar: -7,
+            t_prime_bar: -9,
+        }
+    );
     pub const anti_down: ParticleID = d_bar;
-    pub const u_bar: ParticleID = ParticleID(-2);
     pub const anti_up: ParticleID = u_bar;
-    pub const s_bar: ParticleID = ParticleID(-3);
     pub const anti_strange: ParticleID = s_bar;
-    pub const c_bar: ParticleID = ParticleID(-4);
     pub const anti_charm: ParticleID = c_bar;
-    pub const b_bar: ParticleID = ParticleID(-5);
     pub const anti_bottom: ParticleID = b_bar;
-    pub const t_bar: ParticleID = ParticleID(-6);
     pub const anti_top: ParticleID = t_bar;
-    pub const b_prime_bar: ParticleID = ParticleID(-7);
-    pub const t_prime_bar: ParticleID = ParticleID(-9);
 }
 
 pub mod anti_leptons {
     use super::*;
 
-    pub const e_bar: ParticleID = ParticleID(-11);
+    particle_set!(
+        ANTI_LEPTONS = {
+            e_bar: -11,
+            ν_e_bar: -12,
+            μ_bar: -13,
+            ν_μ_bar: -14,
+            τ_bar: -15,
+            ν_τ_bar: -16,
+            τ_prime_bar: -17,
+            ν_τ_prime_bar: -18,
+        }
+    );
     pub const positron: ParticleID = e_bar;
-    pub const ν_e_bar: ParticleID = ParticleID(-12);
     pub const nu_e_bar: ParticleID = ν_e_bar;
     pub const electron_anti_neutrino: ParticleID = ν_e_bar;
-    pub const μ_bar: ParticleID = ParticleID(-13);
     pub const mu_bar: ParticleID = μ_bar;
     pub const mu_plus: ParticleID = μ_bar;
     pub const μ_plus: ParticleID = μ_bar;
-    pub const ν_μ_bar: ParticleID = ParticleID(-14);
     pub const nu_mu_bar: ParticleID = ν_μ_bar;
     pub const muon_anti_neutrino: ParticleID = ν_μ_bar;
-    pub const τ_bar: ParticleID = ParticleID(-15);
     pub const tau_bar: ParticleID = τ_bar;
     pub const tau_plus: ParticleID = τ_bar;
     pub const τ_plus: ParticleID = τ_bar;
-    pub const ν_τ_bar: ParticleID = ParticleID(-16);
     pub const nu_tau_bar: ParticleID = ν_τ_bar;
     pub const tau_anti_neutrino: ParticleID = ν_τ_bar;
-    pub const τ_prime_bar: ParticleID = ParticleID(-17);
     pub const tau_prime_bar: ParticleID = τ_prime_bar;
-    pub const ν_τ_prime_bar: ParticleID = ParticleID(-18);
     pub const nu_tau_prime_bar: ParticleID = ν_τ_prime_bar;
     pub const tau_prime_anti_neutrino: ParticleID = ν_τ_prime_bar;
 }
