@@ -1,0 +1,14 @@
+[package]
+name = "particle_id"
+description = "Particle IDs according to the Monte Carlo Particle Numbering Scheme"
+authors = ["Andreas Maier <andreas.martin.maier@desy.de>"]
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+keywords = ["physics", "PDG", "Monte Carlo", "particle physics"]
+categories = ["science"]
+repository = "https://github.com/a-maier/particle_id"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
