@@ -10,3 +10,4 @@ categories = ["science"]
 repository = "https://github.com/a-maier/particle_id"
 
 [dependencies]
+serde = { version = "1.0", optional = true, features = ["derive"] }

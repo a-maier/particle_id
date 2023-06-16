@@ -11,9 +11,13 @@
 //! assert_eq!(proton.anti().id(), -proton.id());
 //! ```
 #![allow(non_upper_case_globals)]
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
 
 /// Particle ID according to the [Monte Carlo Particle Numbering
 /// Scheme](https://pdg.lbl.gov/2023/mcdata/mc_particle_id_contents.html)
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(transparent))]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct ParticleID(i32);
 
