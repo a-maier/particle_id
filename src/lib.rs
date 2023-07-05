@@ -975,6 +975,21 @@ impl ParticleID {
         Self(- self.0)
     }
 
+    /// Get the corresponding particle for an anti-particle
+    ///
+    /// If not used on an anti-particle, returns the particle itself
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert_eq!(positron.abs(), electron);
+    /// assert_eq!(electron.abs(), electron);
+    /// ```
+    pub const fn abs(self) -> Self {
+        Self(self.0.abs())
+    }
+
     pub const fn is_anti_particle(&self) -> bool {
         self.0 < 0
     }
