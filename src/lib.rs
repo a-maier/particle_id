@@ -759,11 +759,13 @@ pub mod anti_leptons {
     pub const mu_bar: ParticleID = μ_bar;
     pub const mu_plus: ParticleID = μ_bar;
     pub const μ_plus: ParticleID = μ_bar;
+    pub const anti_muon: ParticleID = μ_bar;
     pub const nu_mu_bar: ParticleID = ν_μ_bar;
     pub const muon_anti_neutrino: ParticleID = ν_μ_bar;
     pub const tau_bar: ParticleID = τ_bar;
     pub const tau_plus: ParticleID = τ_bar;
     pub const τ_plus: ParticleID = τ_bar;
+    pub const anti_tau: ParticleID = τ_bar;
     pub const nu_tau_bar: ParticleID = ν_τ_bar;
     pub const tau_anti_neutrino: ParticleID = ν_τ_bar;
     pub const tau_prime_bar: ParticleID = τ_prime_bar;
