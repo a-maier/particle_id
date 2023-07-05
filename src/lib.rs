@@ -967,10 +967,27 @@ impl ParticleID {
         Some(name)
     }
 
+    /// Get the corresponding integer
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert_eq!(photon.id(), 22);
+    /// ```
     pub const fn id(self) -> i32 {
         self.0
     }
 
+    /// Get the corresponding anti-particle
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert_eq!(positron.anti(), electron);
+    /// assert_eq!(electron.anti(), positron);
+    /// ```
     pub const fn anti(self) -> Self {
         Self(- self.0)
     }
@@ -990,46 +1007,155 @@ impl ParticleID {
         Self(self.0.abs())
     }
 
+    /// Check if this is an anti-particle
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(!electron.is_anti_particle());
+    /// assert!(positron.is_anti_particle());
+    /// ```
     pub const fn is_anti_particle(&self) -> bool {
         self.0 < 0
     }
 
+    /// Check if this is a gauge boson
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(photon.is_gauge_boson());
+    /// assert!(!electron.is_gauge_boson());
+    /// assert!(!Higgs.is_gauge_boson());
+    /// ```
     pub const fn is_gauge_boson(&self) -> bool {
         use gauge_and_higgs_bosons::*;
         let abs_id = self.0.abs();
         gluon.id() <= abs_id && abs_id <= W_plus.id()
     }
 
+    /// Check if this is a quark
+    ///
+    /// Note that anti-quarks are not treated as quarks! Use `abs()`
+    /// if you want to include both quarks and anti-quarks.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(top.is_quark());
+    /// assert!(!anti_top.is_quark());
+    /// assert!(anti_top.abs().is_quark());
+    /// assert!(anti_top.anti().is_quark());
+    /// ```
     pub const fn is_quark(&self) -> bool {
         use quarks::*;
         down.id() < self.id() && self.id() < t_prime.id()
     }
 
+    /// Check if this is an anti-quark
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(!top.is_anti_quark());
+    /// assert!(anti_top.is_anti_quark());
+    /// ```
     pub const fn is_anti_quark(&self) -> bool {
-        self.is_anti_particle() && self.anti().is_quark()
+        self.anti().is_quark()
     }
 
+    /// Check if this is a lepton
+    ///
+    /// Note that anti-leptons are not treated as leptons! Use `abs()`
+    /// if you want to include both leptons and anti-leptons.
+    ///
+    /// Both charged leptons and neutrinos are included.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(muon.is_lepton());
+    /// assert!(!anti_muon.is_lepton());
+    /// assert!(anti_muon.abs().is_lepton());
+    /// assert!(anti_muon.anti().is_lepton());
+    /// ```
     pub const fn is_lepton(&self) -> bool {
         use leptons::*;
         electron.id() <= self.id() && self.id() <= tau_prime_neutrino.id()
     }
 
+    /// Check if this is an anti-lepton
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(!muon.is_anti_lepton());
+    /// assert!(anti_muon.is_anti_lepton());
+    /// ```
     pub const fn is_anti_lepton(&self) -> bool {
-        self.is_anti_particle() && self.anti().is_lepton()
+        self.anti().is_lepton()
     }
 
+    /// Check if this is a neutrino
+    ///
+    /// Note that anti-neutrinos are not treated as neutrinos! Use `abs()`
+    /// if you want to include both neutrinos and anti-neutrinos.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(muon_neutrino.is_neutrino());
+    /// assert!(!muon_anti_neutrino.is_neutrino());
+    /// ```
     pub const fn is_neutrino(&self) -> bool {
         self.is_lepton() && (self.id() & 1 == 0)
     }
 
+    /// Check if this is an anti-neutrino
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(!muon_neutrino.is_anti_neutrino());
+    /// assert!(muon_anti_neutrino.is_anti_neutrino());
+    /// ```
     pub const fn is_anti_neutrino(&self) -> bool {
-        self.is_anti_particle() && self.anti().is_neutrino()
+        self.anti().is_neutrino()
     }
 
+    /// Check if this is a charged lepton
+    ///
+    /// Note that anti-leptons are not treated as leptons! Use `abs()`
+    /// if you want to include both leptons and anti-leptons.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(muon.is_charged_lepton());
+    /// assert!(!electron_neutrino.is_charged_lepton());
+    /// ```
     pub const fn is_charged_lepton(&self) -> bool {
         self.is_lepton() && (self.id() & 1 == 1)
     }
 
+    /// Check if this is a charged anti-lepton
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use particle_id::sm_elementary_particles::*;
+    /// assert!(!muon.is_charged_anti_lepton());
+    /// assert!(anti_muon.is_charged_anti_lepton());
+    /// ```
     pub const fn is_charged_anti_lepton(&self) -> bool {
         self.is_anti_particle() && self.anti().is_charged_lepton()
     }
