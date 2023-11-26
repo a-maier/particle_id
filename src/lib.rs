@@ -901,6 +901,74 @@ impl ParticleID {
         Some(name)
     }
 
+    /// Particle symbol in UTF-8 format
+    pub const fn symbol(&self) -> Option<&'static str> {
+        // TODO: many missing
+        use sm_elementary_particles::*;
+        use light_baryons::*;
+        use light_anti_baryons::*;
+
+        let name = match *self {
+            d => "d",
+            u => "u",
+            s => "s",
+            c => "c",
+            b => "b",
+            t => "t",
+            b_prime => "b'",
+            t_prime => "t'",
+            e => "e",
+            ν_e => "νₑ",
+            μ => "μ",
+            ν_μ => "ν(μ)",
+            τ => "τ",
+            ν_τ => "ν(τ)",
+            τ_prime => "τ'",
+            ν_τ_prime => "ν(τ)",
+            g => "g",
+            γ => "γ",
+            Z => "Z",
+            W_plus => "W⁺",
+            h => "h",
+            Z_prime => "Z'",
+            Z_prime_prime => "Z''",
+            W_prime => "W'",
+            H0 => "H⁰",
+            A0 => "A⁰",
+            H_plus  => "H⁺",
+            H_plus_plus => "H⁺⁺",
+            a0 => "a₋",
+            p => "p",
+            n => "n",
+
+            d_bar => r" ̅d",
+            u_bar => r" ̅u",
+            s_bar => r" ̅s",
+            c_bar => r" ̅c",
+            b_bar => r" ̅b",
+            t_bar => r" ̅t",
+            b_prime_bar => r" ̅b'",
+            t_prime_bar => r" ̅t'",
+            e_bar => "e⁺",
+            ν_e_bar => " ̅νₑ",
+            μ_bar => "μ⁺",
+            ν_μ_bar => " ̅ν(μ)",
+            τ_bar => "τ⁺",
+            ν_τ_bar => " ̅ν(τ)",
+            τ_prime_bar => "τ'⁺",
+            ν_τ_prime_bar => " ̅ν(τ')",
+            W_minus => "W⁻",
+            W_prime_minus => "W⁻⁻",
+            H_minus => "H⁻",
+            H_minus_minus => "H⁻⁻",
+            anti_proton => " ̅p",
+            anti_neutron => " ̅n",
+
+            _ => return None,
+        };
+        Some(name)
+    }
+
     /// Name of the associated particle
     pub const fn name(&self) -> Option<&'static str> {
         // TODO: many missing
