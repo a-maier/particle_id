@@ -833,8 +833,8 @@ impl ParticleID {
         Self(id)
     }
 
-    /// Particle name in LaTeX format
-    pub const fn latex_name(&self) -> Option<&'static str> {
+    /// Particle symbol in LaTeX format
+    pub const fn latex_symbol(&self) -> Option<&'static str> {
         // TODO: many missing
         use sm_elementary_particles::*;
         use light_baryons::*;
