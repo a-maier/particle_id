@@ -835,7 +835,7 @@ impl ParticleID {
 
     /// Particle symbol in LaTeX format
     pub const fn latex_symbol(&self) -> Option<&'static str> {
-        // TODO: many missing
+        // TODO: antiparticles?
         use sm_elementary_particles::*;
         use light_baryons::*;
         use light_anti_baryons::*;
@@ -1211,7 +1211,7 @@ impl ParticleID {
 
     /// Particle symbol in UTF-8 format
     pub const fn symbol(&self) -> Option<&'static str> {
-        // TODO: many missing
+        // TODO: antiparticles?
         use sm_elementary_particles::*;
         use light_baryons::*;
         use light_anti_baryons::*;
