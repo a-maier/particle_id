@@ -27,7 +27,7 @@ const fn concat<const A: usize, const B: usize, const C: usize>(
 ) -> [ParticleID; C] {
     // Assert that `A + B == C`.
     // Any index other than `0` would panic, since we access out of bounds otherwise.
-    let _ = [0; 1][(A + B) - C]; // Assert that `A + B == C`
+    let _ = [0; 1][(A + B) - C];
 
     let mut result = [ParticleID(0); C];
 
