@@ -12,7 +12,7 @@
 //! ```
 #![allow(non_upper_case_globals)]
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// Particle ID according to the [Monte Carlo Particle Numbering
 /// Scheme](https://pdg.lbl.gov/2023/mcdata/mc_particle_id_contents.html)
@@ -373,10 +373,8 @@ pub mod light_mesons {
 
     pub use super::light_Ieq0_mesons::*;
     pub use super::light_Ieq1_mesons::*;
-    pub const LIGHT_MESONS: [ParticleID; 91] = concat_arrays!(
-        LIGHT_IEQ0_MESONS,
-        LIGHT_IEQ1_MESONS
-    );
+    pub const LIGHT_MESONS: [ParticleID; 91] =
+        concat_arrays!(LIGHT_IEQ0_MESONS, LIGHT_IEQ1_MESONS);
 }
 
 pub mod strange_mesons {
@@ -553,12 +551,12 @@ pub mod bbbar_mesons {
 pub mod mesons {
     use crate::ParticleID;
 
-    pub use super::light_mesons::*;
-    pub use super::strange_mesons::*;
-    pub use super::charmed_mesons::*;
+    pub use super::bbbar_mesons::*;
     pub use super::bottom_mesons::*;
     pub use super::ccbar_mesons::*;
-    pub use super::bbbar_mesons::*;
+    pub use super::charmed_mesons::*;
+    pub use super::light_mesons::*;
+    pub use super::strange_mesons::*;
     pub const MESONS: [ParticleID; 221] = concat_arrays!(
         LIGHT_MESONS,
         STRANGE_MESONS,
@@ -692,10 +690,10 @@ pub mod pentaquarks {
 pub mod baryons {
     use crate::ParticleID;
 
+    pub use super::bottom_baryons::*;
+    pub use super::charmed_baryons::*;
     pub use super::light_baryons::*;
     pub use super::strange_baryons::*;
-    pub use super::charmed_baryons::*;
-    pub use super::bottom_baryons::*;
     pub const BARYONS: [ParticleID; 75] = concat_arrays!(
         LIGHT_BARYONS,
         STRANGE_BARYONS,
@@ -707,14 +705,10 @@ pub mod baryons {
 pub mod hadrons {
     use crate::ParticleID;
 
-    pub use super::mesons::MESONS;
     pub use super::baryons::BARYONS;
-    pub const HADRONS: [ParticleID; 296] = concat_arrays!(
-        MESONS,
-        BARYONS
-    );
+    pub use super::mesons::MESONS;
+    pub const HADRONS: [ParticleID; 296] = concat_arrays!(MESONS, BARYONS);
 }
-
 
 pub mod anti_quarks {
     use super::*;
@@ -783,7 +777,10 @@ pub mod anti_gauge_and_higgs_bosons {
 }
 
 pub mod light_anti_baryons {
-    use super::{ParticleID, light_baryons::{p, n}};
+    use super::{
+        light_baryons::{n, p},
+        ParticleID,
+    };
     pub const p_bar: ParticleID = p.anti();
     pub const anti_proton: ParticleID = p_bar;
     pub const n_bar: ParticleID = n.anti();
@@ -820,11 +817,11 @@ pub mod susy_anti_particles {
 
 pub mod sm_elementary_particles {
     pub use super::anti_gauge_and_higgs_bosons::*;
-    pub use super::anti_quarks::*;
     pub use super::anti_leptons::*;
+    pub use super::anti_quarks::*;
     pub use super::gauge_and_higgs_bosons::*;
-    pub use super::quarks::*;
     pub use super::leptons::*;
+    pub use super::quarks::*;
 }
 
 impl ParticleID {
@@ -836,9 +833,9 @@ impl ParticleID {
     /// Particle symbol in LaTeX format
     pub const fn latex_symbol(&self) -> Option<&'static str> {
         // TODO: antiparticles?
-        use sm_elementary_particles::*;
-        use light_baryons::*;
         use light_anti_baryons::*;
+        use light_baryons::*;
+        use sm_elementary_particles::*;
 
         let name = match *self {
             d => "d",
@@ -867,7 +864,7 @@ impl ParticleID {
             W_prime => "W'",
             H0 => "H^0",
             A0 => "A^0",
-            H_plus  => "H^+",
+            H_plus => "H^+",
             H_plus_plus => "H^{++}",
             a0 => "a_0",
             p => "p",
@@ -989,7 +986,7 @@ impl ParticleID {
             light_Ieq0_mesons::f_J_2220 => "f_J(2220)",
             light_Ieq0_mesons::f_4_2300 => "f_4(2300)",
 
-            strange_mesons::K_0_L=> "K^0_L",
+            strange_mesons::K_0_L => "K^0_L",
             strange_mesons::K_0_S => "K^0_S",
             strange_mesons::K_0 => "K^0",
             strange_mesons::K_plus => "K^+",
@@ -1212,9 +1209,9 @@ impl ParticleID {
     /// Particle symbol in UTF-8 format
     pub const fn symbol(&self) -> Option<&'static str> {
         // TODO: antiparticles?
-        use sm_elementary_particles::*;
-        use light_baryons::*;
         use light_anti_baryons::*;
+        use light_baryons::*;
+        use sm_elementary_particles::*;
 
         let name = match *self {
             d => "d",
@@ -1243,7 +1240,7 @@ impl ParticleID {
             W_prime => "W'",
             H0 => "H⁰",
             A0 => "A⁰",
-            H_plus  => "H⁺",
+            H_plus => "H⁺",
             H_plus_plus => "H⁺⁺",
             a0 => "a₋",
             p => "p",
@@ -1365,7 +1362,7 @@ impl ParticleID {
             light_Ieq0_mesons::f_J_2220 => "f(J)(2220)",
             light_Ieq0_mesons::f_4_2300 => "f₄(2300)",
 
-            strange_mesons::K_0_L=> "K⁰(L)",
+            strange_mesons::K_0_L => "K⁰(L)",
             strange_mesons::K_0_S => "K⁰(S)",
             strange_mesons::K_0 => "K⁰",
             strange_mesons::K_plus => "K⁺",
@@ -1588,9 +1585,9 @@ impl ParticleID {
     /// Name of the associated particle
     pub const fn name(&self) -> Option<&'static str> {
         // TODO: many missing
-        use sm_elementary_particles::*;
-        use light_baryons::*;
         use light_anti_baryons::*;
+        use light_baryons::*;
+        use sm_elementary_particles::*;
         let name = match *self {
             d => "down",
             u => "up",
@@ -1618,7 +1615,7 @@ impl ParticleID {
             W_prime => "W prime",
             H0 => "heavy Higgs",
             A0 => "pseudoscalar Higgs",
-            H_plus  => "Higgs plus",
+            H_plus => "Higgs plus",
             H_plus_plus => "Higgs plus plus",
             p => "proton",
             n => "neutron",
@@ -1673,7 +1670,7 @@ impl ParticleID {
     /// assert_eq!(electron.anti(), positron);
     /// ```
     pub const fn anti(self) -> Self {
-        Self(- self.0)
+        Self(-self.0)
     }
 
     /// Get the corresponding particle for an anti-particle
