@@ -1733,7 +1733,7 @@ impl ParticleID {
     /// ```
     pub const fn is_quark(&self) -> bool {
         use quarks::*;
-        down.id() < self.id() && self.id() < t_prime.id()
+        down.id() <= self.id() && self.id() < t_prime.id()
     }
 
     /// Check if this is an anti-quark
